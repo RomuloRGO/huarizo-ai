@@ -127,7 +127,7 @@ from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
 
 transport = StdioTransport(
-    command=r"E:\Proyecto portafolio Dividendos\alpaca_hackathon_app\.venv-spike\Scripts\alpaca-mcp-server.exe",
+    command=r"C:\path\to\alpaca_hackathon_app\.venv-spike\Scripts\alpaca-mcp-server.exe",
     args=[],
     env=env,  # os.environ + ALPACA_API_KEY / ALPACA_SECRET_KEY / ALPACA_PAPER_TRADE
 )
