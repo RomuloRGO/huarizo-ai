@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+.venv/
+.venv-spike/
+ENV/
+
+# Environment variables & secrets
+.env
+.env.bak-*
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ── Estado de ejecución: NUNCA publicar ────────────────────────────────────
+# `account_onboarding.json` lleva el account_id y el account_number de la cuenta
+# de paper: publicarlo es filtrar la identidad de la cuenta del concurso.
+# `execution_ledger.json` guarda las reservas de orden (llaves de idempotencia) y
+# `risk_state.json` la pausa por pérdida diaria. Son runtime, no código.
+options_journal.json
+execution_ledger.json
+execution_ledger.json.tmp
+risk_state.json
+account_onboarding.json
+.superpowers/

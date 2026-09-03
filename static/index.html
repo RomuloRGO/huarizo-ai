@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huarizo AI — Autonomous Multi-Strategy Trading Agent for Alpaca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="app-layout">
+
+  <!-- LEFT VERTICAL NAVIGATION SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="sidebar-brand">
+      <span class="brand-icon">🦙</span>
+      <div class="brand-text">
+        <h2>Huarizo AI</h2>
+        <span class="subtext">Alpaca Paper Bot</span>
+      </div>
+    </div>
+
+    <!-- SIDEBAR NAV LINKS (SPA VIEW SWITCHER) -->
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="view-terminal" id="nav-terminal">
+        <span>Trading Terminal</span>
+      </button>
+      <button class="nav-item" data-view="view-options" id="nav-options">
+        <span>Options Alpha</span>
+      </button>
+      <button class="nav-item" data-view="view-transactions" id="nav-transactions">
+        <span>Trades / Orders</span>
+      </button>
+    </nav>
+
+    <!-- SIDEBAR FOOTER -->
+    <div class="sidebar-footer">
+      <div class="status-pill connected">
+        <span class="dot"></span> Alpaca $100k Active
+      </div>
+      <span class="version-tag">v2.4 Institutional</span>
+    </div>
+  </aside>
+
+  <!-- MAIN APP CONTENT AREA -->
+  <div class="app-main-wrapper">
+
+    <!-- TOP HEADER -->
+    <header class="topbar">
+      <div class="topbar-title-group">
+        <h1 id="page-title">Autonomous Multi-Strategy Trading Agent</h1>
+        <span class="tagline" id="page-tagline">Autonomous Options Agent · Hard Risk Gates · Full Audit Trail</span>
+      </div>
+      <div class="topbar-status">
+        <div class="ai-badge">
+          <span class="pulse-ring"></span>
+          <span>AI Sentinel Active</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN METRICS HEADER -->
+    <div class="top-metrics-wrapper">
+      <section class="metrics-row">
+        <div class="metric-card">
+          <span class="metric-label">Portfolio Value</span>
+          <span class="metric-value" id="val-portfolio">$100,000.00</span>
+          <span class="metric-sub" id="sub-currency">USD · Paper Trading</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Available Cash</span>
+          <span class="metric-value" id="val-cash">$100,000.00</span>
+          <span class="metric-sub text-green">100% Liquid</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Buying Power</span>
+          <span class="metric-value" id="val-buying-power">$400,000.00</span>
+          <span class="metric-sub text-yellow">4.0x Reg-T Leverage</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Daily Open Positions</span>
+          <span class="metric-value" id="val-positions-count">0</span>
+          <span class="metric-sub" id="val-day-pl">P&L: $0.00 (0.00%)</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- SPA VIEW CONTAINERS -->
+    <main class="dashboard-container">
+
+      <!-- ===================================================================
+           VIEW 1: TRADING TERMINAL (WITH INTEGRATED AUTOPILOT)
+           =================================================================== -->
+      <div class="spa-view active" id="view-terminal">
+
+        <!-- SEARCH & CONTROLS BAR -->
+        <section class="search-bar-row">
+          <div class="search-input-group">
+            <input type="text" id="ticker-input" placeholder="Search US Symbol (e.g. NVDA, AAPL, MSFT, TSLA, AMD, PLTR)..." value="NVDA">
+            <button id="btn-analyze" class="btn btn-primary">Run Huarizo AI</button>
+          </div>
+        </section>
+
+        <!-- TWO-COLUMN WORKSPACE -->
+        <div class="workspace-grid">
+
+          <!-- LEFT COLUMN: BACKTEST BUILDER & CONTINUOUS AUTOPILOT -->
+          <div class="left-column">
+
+            <!-- STRATEGY BACKTEST BUILDER -->
+            <div class="card backtest-card">
+              <div class="card-header">
+                <h3>Multi-Strategy Backtester</h3>
+                <span class="badge-mini">Historical Simulator</span>
+              </div>
+              <div class="backtest-controls">
+                <div class="control-row">
+                  <label>Preset Strategy:</label>
+                  <select id="backtest-strategy-select">
+                    <option value="trend_following">Trend Following Master (SMA + Squeeze + MACD)</option>
+                    <option value="mean_reversion">Mean Reversion Sniper (Bollinger + RSI + Stoch)</option>
+                    <option value="squeeze_breakout">Squeeze Momentum Breakout (Keltner Volatility)</option>
+                    <option value="dividend_value">Support Value Guard (Support Pullback + Oversold)</option>
+                  </select>
+                </div>
+                <button id="btn-run-backtest" class="btn btn-secondary btn-block">Run Strategy Backtest</button>
+              </div>
+              <div id="backtest-results-container" class="backtest-results hidden">
+                <div class="backtest-metrics-grid">
+                  <div class="bt-stat">
+                    <span class="bt-lbl">Win Rate</span>
+                    <span class="bt-val text-green" id="bt-winrate">--%</span>
+                  </div>
+                  <div class="bt-stat">
+                    <span class="bt-lbl">Profit Factor</span>
+                    <span class="bt-val" id="bt-profitfactor">--x</span>
+                  </div>
+                  <div class="bt-stat">
+                    <span class="bt-lbl">Total Return</span>
+                    <span class="bt-val text-yellow" id="bt-return">--%</span>
+                  </div>
+                  <div class="bt-stat">
+                    <span class="bt-lbl">Max Drawdown</span>
+                    <span class="bt-val text-red" id="bt-drawdown">--%</span>
+                  </div>
+                </div>
+                <div class="bt-comparison" id="bt-comparison">
+                  Strategy vs Buy & Hold: <span id="bt-vs-bh" class="text-green">+0.00%</span>
+                </div>
+                <div class="equity-chart-container">
+                  <div class="chart-header-mini">Historical Equity Curve ($10k Initial)</div>
+                  <div id="equity-chart-box" class="equity-canvas-box"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CONTINUOUS AUTONOMOUS AUTO-PILOT (INTEGRATED IN MAIN TERMINAL) -->
+            <div class="card autopilot-card">
+              <div class="card-header">
+                <h3>Continuous Auto-Pilot</h3>
+                <span class="badge-mini text-cyan" id="autopilot-status-badge">Idle</span>
+              </div>
+              <p class="autopilot-desc">Huarizo AI continuously scans the options universe, runs strategy tournaments as historical context, and submits single-leg option orders — every one through the hard risk gates before it can reach Alpaca.</p>
+              <div class="autopilot-controls">
+                <div class="control-row">
+                  <label>Scan Frequency Loop:</label>
+                  <select id="autopilot-interval-select">
+                    <option value="30">Every 30 seconds (High Frequency)</option>
+                    <option value="60" selected>Every 60 seconds (Standard)</option>
+                    <option value="120">Every 2 minutes</option>
+                    <option value="300">Every 5 minutes</option>
+                  </select>
+                </div>
+                <label class="toggle-container">
+                  <input type="checkbox" id="autopilot-submit-toggle" checked>
+                  <span>Auto-Submit Option Orders to Alpaca</span>
+                </label>
+                <button id="btn-run-autopilot" class="btn btn-primary btn-block">
+                  <span>Start Continuous Auto-Pilot</span>
+                </button>
+              </div>
+              <div class="autopilot-terminal-container" id="autopilot-logs-box">
+                <div class="terminal-header">
+                  <span>Auto-Pilot Execution Stream</span>
+                  <span class="live-dot" id="autopilot-live-dot"></span>
+                </div>
+                <div class="autopilot-logs" id="autopilot-logs">
+                  <div class="autopilot-log-entry text-muted">[System Ready] Click 'Start Continuous Auto-Pilot' to begin autonomous background scanning & trading.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: AI AGENT DECISION TERMINAL -->
+          <div class="right-column">
+
+            <!-- AI AGENT VERDICT HERO -->
+            <div class="card agent-terminal-card">
+              <div class="agent-hero-header">
+                <div class="hero-left">
+                  <div class="ticker-title-group">
+                    <h2 id="hero-ticker">NVDA</h2>
+                    <span class="spot-price" id="hero-price">$225.00</span>
+                    <span class="change-badge" id="hero-change">+0.00%</span>
+                  </div>
+                  <!-- CONTEXTO, NO DECISIÓN: el torneo no alimenta el score. El
+                       `confidence_score` se calcula sólo con tendencia ±20,
+                       estocástico ±15, RSI ±10 y vela ±10 sobre base 50. El
+                       torneo corre sobre las MISMAS 250 velas y sin validación
+                       fuera de muestra (`oos_trades` está fijado en 0 en
+                       backtest_engine), así que usarlo para elegir estrategia
+                       o tamaño sería sobreajuste presentado como edge. -->
+                  <div class="tournament-winner-pill" id="hero-tournament-pill"
+                       title="Historical context, not a decision: the tournament does not feed the confidence_score.">
+                    Best historical backtest: <strong id="hero-strategy-name">Analyzing...</strong> (<span id="hero-strategy-stats">Optimizing Tournament...</span>)
+                  </div>
+                </div>
+                <div class="hero-right">
+                  <div class="signal-badge" id="hero-signal-badge">
+                    <span class="signal-text" id="hero-signal">ANALYZING...</span>
+                    <span class="confidence-text" id="hero-confidence">Confidence: --%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NATIVE INTERACTIVE FINANCIAL CANDLESTICK CHART -->
+              <div class="candlestick-section">
+                <div class="candlestick-header">
+                  <div class="chart-title-left">
+                    <h4>Live Candlestick Chart & ATR Levels</h4>
+                  </div>
+                  <div class="chart-badges">
+                    <span class="badge-tag tag-tp" id="chart-tag-tp">Take-Profit: $0.00</span>
+                    <span class="badge-tag tag-sl" id="chart-tag-sl">Stop-Loss: $0.00</span>
+                  </div>
+                </div>
+                <div class="chart-canvas-wrapper" id="chart-wrapper">
+                  <canvas id="native-candlestick-canvas"></canvas>
+                  <div class="chart-tooltip hidden" id="chart-tooltip"></div>
+                </div>
+              </div>
+
+              <!-- STRATEGY TOURNAMENT BATTLE ARENA -->
+              <div class="tournament-arena-box">
+                <div class="arena-header">
+                  <h4>Strategy Tournament Battle Arena</h4>
+                  <span class="badge-mini">Context · not a decision</span>
+                </div>
+                <p class="arena-note">
+                  Historical context over the same 250 candles used for the analysis,
+                  <strong>with no out-of-sample validation</strong>. It does not feed the
+                  <em>confidence_score</em>, nor choose the strategy or the size: the score
+                  uses only trend ±20, stochastic ±15, RSI ±10 and candle ±10 on a base of 50.
+                  Wiring it in would be overfitting presented as an edge.
+                </p>
+                <div class="tournament-bars-grid" id="tournament-bars-container">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- AI INVESTMENT THESIS BOX -->
+              <div class="ai-thesis-box">
+                <div class="thesis-header">
+                  <h4 id="thesis-headline">Synthesizing Market Intelligence...</h4>
+                </div>
+                <ul class="thesis-list" id="thesis-points">
+                  <li>Ingesting Alpaca daily OHLCV bars and volume trends.</li>
+                  <li>Evaluating RSI, MACD, Squeeze and Stochastic Oscillators.</li>
+                  <li>Evaluating real-time Benzinga sentiment and market catalysts.</li>
+                </ul>
+              </div>
+
+              <!-- TECHNICAL MATRIX -->
+              <div class="tech-matrix-grid">
+                <div class="tech-pill">
+                  <span class="pill-label">Trend Regime</span>
+                  <span class="pill-val" id="val-trend">Bullish Trend</span>
+                </div>
+                <div class="tech-pill">
+                  <span class="pill-label">RSI (14)</span>
+                  <span class="pill-val" id="val-rsi">62.5 (Neutral)</span>
+                </div>
+                <div class="tech-pill">
+                  <span class="pill-label">Stochastic (%K/%D)</span>
+                  <span class="pill-val" id="val-stoch">95.3 / 90.2 (Bullish)</span>
+                </div>
+                <div class="tech-pill">
+                  <span class="pill-label">TTM Squeeze</span>
+                  <span class="pill-val text-yellow" id="val-squeeze">Expanded</span>
+                </div>
+                <div class="tech-pill">
+                  <span class="pill-label">Candlestick Pattern</span>
+                  <span class="pill-val text-cyan" id="val-candle-pattern">None</span>
+                </div>
+                <div class="tech-pill">
+                  <span class="pill-label">Chart Formation</span>
+                  <span class="pill-val" id="val-chart-pattern">None</span>
+                </div>
+              </div>
+
+              <!-- LIVE NEWS ROW -->
+              <div class="news-mini-widget">
+                <h5>Live Benzinga News</h5>
+                <div class="news-list" id="agent-news-list">
+                  <div class="news-item-loading">Fetching live news...</div>
+                </div>
+              </div>
+
+              <!-- STOCK BRACKET ORDERS — DESACTIVADO FAIL-CLOSED (options-only) -->
+              <div class="order-execution-panel is-disabled" id="stock-order-panel">
+                <div class="order-header">
+                  <h4 id="stock-order-heading">Stock Bracket Orders — Disabled</h4>
+                  <span class="order-tag order-tag-disabled" id="stock-order-tag">Fail-closed · options-only</span>
+                </div>
+                <p class="order-disabled-note" id="stock-order-note">
+                  The autonomous flow is <strong>options-only</strong>. Equity orders are rejected
+                  server-side, before they can reach Alpaca, while
+                  <code>HUARIZO_STOCK_AUTOPILOT=false</code>. The control is shown disabled on
+                  purpose: a guard that hides itself is a guard nobody can verify.
+                </p>
+                <div class="order-inputs-grid is-disabled" id="stock-order-inputs">
+                  <div class="order-input-col">
+                    <label for="order-qty">Order Qty (Shares):</label>
+                    <input type="number" id="order-qty" value="10" min="1" step="1">
+                  </div>
+                  <div class="order-input-col">
+                    <label>Take-Profit (+3x ATR):</label>
+                    <input type="text" id="order-tp" value="$0.00" readonly class="text-green">
+                  </div>
+                  <div class="order-input-col">
+                    <label>Stop-Loss (-2x ATR):</label>
+                    <input type="text" id="order-sl" value="$0.00" readonly class="text-red">
+                  </div>
+                  <div class="order-input-col btn-col">
+                    <button id="btn-execute-order" class="btn btn-execute" disabled>
+                      <span id="btn-execute-order-label">Equity Orders Disabled</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="order-feedback" id="order-feedback" aria-live="polite"></div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ORDER REVIEW SAFETY GATE DIALOG -->
+        <div class="order-review-backdrop hidden" id="order-review-backdrop">
+          <div class="order-review-dialog" role="dialog" aria-modal="true" aria-labelledby="order-review-title" aria-describedby="order-review-disclaimer">
+            <h4 id="order-review-title">Review Bracket Order — <span id="order-review-ticker">--</span></h4>
+            <dl class="order-review-grid">
+              <dt>Side</dt><dd id="order-review-side">BUY</dd>
+              <dt>Quantity</dt><dd id="order-review-qty">--</dd>
+              <dt>Est. Entry Price (analysis)</dt><dd id="order-review-entry">--</dd>
+              <dt>Estimated Notional</dt><dd id="order-review-notional">--</dd>
+              <dt>Stop-Loss</dt><dd id="order-review-sl">--</dd>
+              <dt>Take-Profit</dt><dd id="order-review-tp">--</dd>
+              <dt>Max Loss to Stop (est.)</dt><dd id="order-review-maxloss" class="text-red">--</dd>
+              <dt>Potential Gain to Target (est.)</dt><dd id="order-review-gain" class="text-green">--</dd>
+              <dt>Risk/Reward</dt><dd id="order-review-rr">--</dd>
+            </dl>
+            <p class="order-review-disclaimer" id="order-review-disclaimer">
+              Figures are estimates from the analysis-time price, not the guaranteed fill price.
+              Actual execution may differ due to slippage, price movement, and partial fills.
+              The stop-loss does not guarantee a maximum loss if the price gaps through it.
+            </p>
+            <p class="order-review-paper-notice">
+              Paper Trading notice: this order will be submitted to <strong>Alpaca Paper Trading</strong>, not a live brokerage account.
+            </p>
+            <label class="order-review-ack">
+              <input type="checkbox" id="order-review-ack">
+              <span>I understand this is a paper-trading order and that the figures above are estimates.</span>
+            </label>
+            <div class="order-review-error text-red hidden" id="order-review-error" role="alert"></div>
+            <div class="order-review-actions">
+              <button id="order-review-cancel" class="btn btn-secondary">Cancel</button>
+              <button id="order-review-confirm" class="btn btn-execute" disabled>Confirm &amp; Submit</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPEN POSITIONS TABLE -->
+        <section class="positions-section card">
+          <div class="card-header">
+            <h3>Live Alpaca Portfolio Positions</h3>
+            <button id="btn-refresh-positions" class="btn btn-sm btn-secondary">Refresh</button>
+          </div>
+          <div class="table-responsive">
+            <table class="positions-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Shares</th>
+                  <th>Avg Entry</th>
+                  <th>Current Price</th>
+                  <th>Market Value</th>
+                  <th>Unrealized P&L ($)</th>
+                  <th>P&L (%)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="positions-tbody">
+                <tr>
+                  <td colspan="8" class="text-center text-muted">No open positions in Paper Trading portfolio.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ===================================================================
+           VIEW 2: TRADES & ORDER HISTORY LEDGER
+           =================================================================== -->
+      <div class="spa-view hidden" id="view-transactions">
+        <div class="transactions-view-layout">
+
+          <!-- SUMMARY STATS BANNER -->
+          <div class="card transactions-summary-card">
+            <div class="card-header">
+              <div>
+                <h2>Official Trades &amp; Orders Ledger</h2>
+                <p class="text-secondary" style="font-size:0.8rem;">Every option order sent to Alpaca Paper Trading ($100k), with its authorization key and risk-gate verdict.</p>
+              </div>
+              <button id="btn-refresh-orders" class="btn btn-secondary btn-sm">Refresh Ledger</button>
+            </div>
+
+            <div class="tx-stats-grid">
+              <div class="tx-stat-box">
+                <span class="tx-stat-lbl">Total Orders Logged</span>
+                <span class="tx-stat-val text-yellow" id="tx-total-count">50</span>
+              </div>
+              <div class="tx-stat-box">
+                <span class="tx-stat-lbl">Filled Orders</span>
+                <span class="tx-stat-val text-green" id="tx-filled-count">--</span>
+              </div>
+              <div class="tx-stat-box">
+                <span class="tx-stat-lbl">Exit Orders (Stop-Loss)</span>
+                <span class="tx-stat-val text-red" id="tx-sl-count">--</span>
+              </div>
+              <div class="tx-stat-box">
+                <span class="tx-stat-lbl">Safety Filter</span>
+                <span class="tx-stat-val text-cyan">&gt;= $5.00 Active</span>
+              </div>
+            </div>
+
+            <!-- FILTER CONTROLS BAR -->
+            <div class="tx-filter-bar">
+              <div class="tx-filters-left">
+                <button class="tab-btn active" data-tx-filter="all">All Orders</button>
+                <button class="tab-btn" data-tx-filter="buy">Buys (BUY)</button>
+                <button class="tab-btn" data-tx-filter="sell">Sells / Stop-Loss (SELL)</button>
+                <button class="tab-btn" data-tx-filter="filled">Filled</button>
+              </div>
+              <div class="tx-search-right">
+                <input type="text" id="tx-search-input" placeholder="Filter by ticker (e.g.: NVDA, AAPL)..." style="background:var(--bg-obsidian); border:1px solid var(--border-subtle); color:#fff; padding:0.4rem 0.8rem; border-radius:4px; font-family:var(--font-mono); font-size:0.8rem;">
+              </div>
+            </div>
+          </div>
+
+          <!-- FULL TRANSACTIONS DATA TABLE -->
+          <div class="card">
+            <div class="table-responsive">
+              <table class="positions-table" id="full-transactions-table">
+                <thead>
+                  <tr>
+                    <th>Date / Time (UTC)</th>
+                    <th>Ticker</th>
+                    <th>Type / Side</th>
+                    <th>Qty</th>
+                    <th>Fill Price</th>
+                    <th>Total Value ($)</th>
+                    <th>Order Class</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="full-orders-tbody">
+                  <tr>
+                    <td colspan="9" class="text-center text-muted">Loading Alpaca trades...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           VIEW 3: OPTIONS ALPHA AGENT (FULL-WIDTH WORKSPACE)
+           =================================================================== -->
+      <div class="spa-view hidden" id="view-options">
+
+        <!-- PAGE HEADER ROW -->
+        <div class="options-page-header">
+          <div>
+            <h2>Options Alpha Agent</h2>
+            <p class="options-page-subtitle">Technical signal → OCC contract selection → risk-sized entry → app-side TP/SL/time-stop exits, all on Alpaca Paper.</p>
+          </div>
+          <span class="badge-cyan">OCC Paper · Exits App-Side · Autopilot with Hard Limits</span>
+        </div>
+
+        <!-- TOOLBAR CARD -->
+        <section class="card options-toolbar-card">
+          <div class="options-toolbar">
+            <input type="text" id="opt-ticker-input" placeholder="Ticker (e.g.: AAPL)" maxlength="6">
+            <button id="opt-load-chain-btn" class="btn btn-secondary">Load Chain</button>
+            <span class="opt-expiry-wrap">
+              <label for="opt-strategy-type">Strategy</label>
+              <select id="opt-strategy-type">
+                <option value="directional" selected>Directional Trading</option>
+                <option value="premium_income">Premium Income</option>
+              </select>
+            </span>
+            <span class="opt-premium-wrap hidden" id="opt-premium-wrap">
+              <select id="opt-premium-strategy">
+                <option value="cash_secured_put">Cash-Secured Put</option>
+                <option value="covered_call">Covered Call</option>
+              </select>
+              <input id="opt-target-strike" type="number" step="0.01" min="0" placeholder="Target strike">
+            </span>
+            <span class="opt-expiry-wrap">
+              <label for="opt-expiry-select">Expiry</label>
+              <select id="opt-expiry-select" disabled></select>
+              <span id="opt-expiry-dte" class="badge-mini">— DTE</span>
+            </span>
+            <button id="opt-proposal-btn" class="btn btn-primary">Propose Trade</button>
+            <label class="autopilot-toggle">
+              <input type="checkbox" id="opt-autopilot-toggle"> AUTOPILOT
+            </label>
+            <span id="opt-autopilot-status" class="badge-mini">…</span>
+          </div>
+        </section>
+
+        <!-- CHAIN + SIDE STACK GRID -->
+        <div class="options-grid">
+
+          <!-- LEFT: OPTIONS CHAIN TABLE (~58%) -->
+          <section class="card options-chain-card">
+            <div class="card-header">
+              <h3>Options Chain — Around Spot</h3>
+              <span class="badge-mini">Top 25 Strikes</span>
+            </div>
+            <div class="table-responsive">
+              <table class="positions-table options-chain-table" id="opt-chain-table">
+                <thead><tr>
+                  <th>Call Δ</th><th>IV C</th><th>OI C</th><th>Bid C</th><th>Ask C</th>
+                  <th>STRIKE</th>
+                  <th>Bid P</th><th>Ask P</th><th>OI P</th><th>IV P</th><th>Put Δ</th>
+                </tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- RIGHT: STATS + PROPOSAL STACK -->
+          <div class="options-side-stack">
+
+            <section class="card options-summary-card">
+              <div class="card-header"><h3>Chain Summary &amp; OI Profile</h3></div>
+              <div id="opt-summary-hint" class="options-summary-hint text-muted">Load a chain to see spot price, ATM IV, open interest profile and available contracts.</div>
+              <div id="opt-chain-summary" class="opt-stats-grid"></div>
+              <div id="opt-oi-chart-block" class="opt-oi-chart-block hidden">
+                <div class="opt-oi-chart-head">
+                  <span class="opt-oi-title">Open Interest by Strike</span>
+                </div>
+                <div id="opt-oi-chart"></div>
+              </div>
+            </section>
+
+            <section class="card options-proposal-slot">
+              <div class="card-header"><h3>Trade Proposal</h3></div>
+              <div id="opt-proposal-card" class="proposal-card proposal-empty text-muted">No proposal yet. Run “Propose Trade” to let the agent size a directional option.</div>
+            </section>
+
+          </div>
+
+        </div>
+
+        <!-- JOURNAL TABLE (FULL WIDTH) -->
+        <section class="card options-journal-card">
+          <div class="journal-header card-header"><h3>Options Trade Journal</h3></div>
+          <div class="table-responsive">
+            <table class="positions-table" id="opt-journal-table">
+              <thead><tr>
+                <th>ID</th><th>Ticker</th><th>Contract</th><th>Dir</th><th>Qty</th>
+                <th>Entry</th><th>Status</th><th>Reason</th><th>P&amp;L</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="order_review.js"></script>
+  <script src="options_charts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

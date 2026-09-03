@@ -1,0 +1,10 @@
+flask>=3.0.0
+alpaca-py>=0.30.0
+pandas>=2.0.0
+numpy>=1.24.0
+google-genai>=2.0.0
+# Opcional: SDK legacy de Google. `llm_provider` lo intenta como relevo si el
+# SDK nuevo falla, pero ya no es el camino principal.
+# google-generativeai>=0.8.0
+python-dotenv>=1.0.0
+requests>=2.31.0
