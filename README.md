@@ -7,7 +7,8 @@ Agents Hackathon** on lablab.ai.
 > balance, options level 3, started 2026-09-01).
 
 Huarizo AI runs an options-only pipeline against the Alpaca MCP server: live
-OCC chain -> deterministic risk gates (R1-R6) -> idempotent reservation ->
+OCC chain -> contract rules (R1-R3, R5, R6) -> account gate -> idempotent
+reservation ->
 authorization ledger -> single option order. Equity orders are **fail-closed**
 at the server (`POST /api/orders/bracket` returns 403 by design). A judge can
 re-derive any refusal from the local ledger and the risk_gate verdict;
@@ -33,20 +34,36 @@ pipeline.
 
 ---
 
-## Hard risk gates (R1-R6)
+## Hard gates: contract rules and account limits
 
-Every proposal is evaluated by a **deterministic** set of gates. The gates run
-without the LLM. They refuse to emit a proposal before the network call, so
-the API never sees a candidate that already failed.
+Every proposal is evaluated by two **deterministic** layers. Both run without
+the LLM and refuse before the network call, so the API never sees a candidate
+that already failed.
 
-| Gate | Refuses when | Why |
+### Contract rules — R1, R2, R3, R5, R6
+
+These decide *which* contract may be bought, and live in `options_engine.py`
+(all but R6, which lives in `risk_gate.py`). The IDs are the ones the agent
+prints when it refuses. **There is no R4**: the set grew organically and the
+numbering was kept, rather than renumbered, because the logs and the UI cite it.
+
+| Rule | Refuses when | Why |
 |---|---|---|
-| **R1** Buying power | Notional + margin headroom < premium x qty x 100 | A contract is **100 shares**, not 1 |
-| **R2** DTE window | Days-to-expiration outside 7-45 | Too thin to be expressive; too long to be tradeable |
-| **R3** Liquidity | Bid/ask spread > 10 % of mid | Mispricing is the enemy, not the spread |
-| **R4** Greeks | delta / theta / iv missing on the contract | No decision without a partial greeks surface |
-| **R5** Confidence floor | `confidence_score < 0.62` | The model is too uncertain to size at the production budget |
-| **R6** Underlying concentration | Already `1` open position in the same underlying | One bet per ticker — no matter how tempting the second strike looks |
+| **R1** DTE window | Outside 7-45 days — and *ranked*, not just cut: >= 21 days preferred, >= 14 acceptable, < 14 last resort | Sorting by delta alone always landed on the 7-day contract: maximum theta, and no time for the thesis to work |
+| **R2** Premium vs realised vol | Contract IV > 1.25 x RV(30 sessions) | Expensive premium is a loss you pay up front. Abstains rather than blocks when RV is unavailable |
+| **R3** Theta burn | abs(theta) / mid > 3.0 % of premium per day | A 7-day ATM burns ~7 %/day, 21 days ~2.4 %, 30 days ~1.7 % |
+| **R5** Term structure | Near-expiry IV / far-expiry IV > 1.15 — rejects the whole symbol | An inverted curve means a dated event is priced in: the long buyer pays inflated vol and eats the crush |
+| **R6** Underlying concentration | Already `1` open position (held **or** in flight) in the same underlying | One bet per ticker — no matter how tempting the second strike looks |
+
+### Account gate — `risk_gate.evaluate_new_entry`
+
+Runs 16 named refusals before an order is built, including a daily-loss pause
+(5 % of the day's opening equity, persisted to disk so it survives a restart),
+duplicate in-flight order, gross exposure (100 % of equity), position size
+(5 %), and a $5,000 notional cap. Options are measured against **options**
+buying power with a 10 % buffer, not general buying power — a contract is 100
+shares, so 1 contract at $3 is $300, not $3. Fail-closed throughout: a missing
+or unreadable account snapshot is a rejection, never a pass.
 
 R6 is the gate that refused the in-flight duplicate on the live account: the
 real book held `{SPY:1, QQQ:1, AAPL:1}` and a second SPY call was rejected
@@ -73,7 +90,7 @@ which makes the gate's causality inspectable.
                         |                             |
                         +--------------+--------------+
                                        |
-                          Risk gates R1-R6 (deterministic)
+                         Contract rules + account gate
                                        |
                           Idempotency check (15-min window)
                                        |
@@ -188,11 +205,11 @@ causality.
 |-- alpaca_service.py         TradingClient wrapper (positions, history)
 |-- alpaca_tools.py           Market data, news, dividends, screener
 |-- backtest_engine.py        Tournament backtester (historical context)
-|-- risk_gate.py              R1-R6 deterministic gates
+|-- risk_gate.py              Account gate (16 refusals) + R6
 |-- execution_ledger.py       Per-order authorization + idempotency ledger
 |-- exit_manager.py           App-side bracket emulation (TP / SL / time-stop)
 |-- journal.py                Options trade journal + realized P&L
-|-- options_engine.py         OCC chain enrichment + snapshot logic
+|-- options_engine.py         Contract rules R1-R3, R5 + sizing
 |-- llm_provider.py           Optional Vertex / Gemini synthesis layer
 |-- technical_engine.py       SMA / EMA / RSI / MACD / ATR / Squeeze
 |-- pattern_engine.py         Candlestick + chart pattern detector
@@ -215,8 +232,8 @@ causality.
 | `GET` | `/api/account` | Paper account snapshot |
 | `GET` | `/api/positions` | Open positions |
 | `GET` | `/api/options/chain/<ticker>` | Live OCC chain |
-| `POST` | `/api/options/proposal` | Build a proposal and run it through R1-R6 |
-| `POST` | `/api/options/order` | Submit one option order (after R1-R6 + idempotency) |
+| `POST` | `/api/options/proposal` | Build a proposal and run it through the contract rules |
+| `POST` | `/api/options/order` | Submit one option order (after contract rules + account gate + idempotency) |
 | `GET` | `/api/options/journal` | Trade journal + realized P&L |
 | `POST` | `/api/options/close/<id>` | Manual sell-to-close |
 | `GET` | `/api/options/autopilot` | Autopilot state |
